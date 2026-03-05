@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SurveyPage } from './survey-page';
+import { SurveyPage } from './survey-page.component';
 
 describe('SurveyPage', () => {
   let component: SurveyPage;

@@ -4,7 +4,7 @@ export const ONBOARDING_ROUTES: Routes = [
   {
     path: 'survey',
     loadComponent: () =>
-      import('./survey/pages/survey-page/survey-page')
+      import('./survey/pages/survey-page/survey-page.component')
         .then(m => m.SurveyPageComponent)
   }
 ];
