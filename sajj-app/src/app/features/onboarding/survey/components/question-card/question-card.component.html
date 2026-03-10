@@ -1,0 +1,39 @@
+<div class="question-card">
+
+  <h2 class="title">
+    {{ question.title }}
+  </h2>
+
+  <p class="subtitle">
+    {{ question.subtitle }}
+  </p>
+
+  <div class="options">
+
+    <button
+      class="option"
+      *ngFor="let option of options"
+      (click)="onSelect(option)"
+    >
+
+      <span *ngIf="option.emoji" class="emoji">
+        {{ option.emoji }}
+      </span>
+
+      <div class="content">
+
+        <div class="label">
+          {{ option.label }}
+        </div>
+
+        <div *ngIf="option.description" class="description">
+          {{ option.description }}
+        </div>
+
+      </div>
+
+    </button>
+
+  </div>
+
+</div>

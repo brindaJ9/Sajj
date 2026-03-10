@@ -1,4 +1,24 @@
 <app-progress-bar
   [current]="currentStep"
   [total]="totalSteps">
-</app-progress-bar>  
+</app-progress-bar>
+
+<app-question-card
+  [question]="questions[currentStep]"
+  (selectedOption)="selectAnswer(questions[currentStep].id, $event)">
+</app-question-card>
+
+<div class="navigation">
+
+  <button
+    (click)="previousQuestion()"
+    [disabled]="currentStep === 0">
+    Back
+  </button>
+
+  <button
+    (click)="nextQuestion()">
+    Next
+  </button>
+
+</div>
