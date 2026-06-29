@@ -1,0 +1,72 @@
+.survey-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5e6d3 0%, #e8d4c0 50%, #d9c4b0 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.survey-header {
+  margin-bottom: 30px;
+}
+
+.brand-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 48px;
+  font-weight: 400;
+  color: #2c2c2c;
+  margin: 0;
+  text-align: center;
+}
+
+.survey-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  padding: 50px 60px;
+  max-width: 800px;
+  width: 100%;
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.navigation {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding-top: 30px;
+}
+
+.next-button {
+  background: #e8d4c0;
+  color: #2c2c2c;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: #d9c4b0;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@media (max-width: 768px) {
+  .survey-card {
+    padding: 30px 25px;
+  }
+
+  .brand-title {
+    font-size: 36px;
+  }
+}

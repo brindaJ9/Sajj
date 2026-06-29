@@ -1,4 +1,5 @@
 export type QuestionType =
+  | "style-vibe"
   | "body-type"
   | "style-genre"
   | "occasions"

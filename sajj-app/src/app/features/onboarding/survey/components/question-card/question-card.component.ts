@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core
 import { CommonModule } from '@angular/common';
 
 import {
+  STYLE_VIBES,
   BODY_TYPES,
   STYLE_GENRES,
   OCCASIONS,
@@ -20,7 +21,7 @@ import {
 export class QuestionCard implements OnChanges{
 
   @Input() question: any;
-  @Input() selected: string[] = [];
+  @Input() selectedAnswer: string | undefined;
 
   @Output() selectedOption = new EventEmitter<string>();
 
@@ -35,6 +36,10 @@ export class QuestionCard implements OnChanges{
     if (!this.question) return;
 
     switch (this.question.type) {
+
+      case 'style-vibe':
+        this.options = STYLE_VIBES;
+        break;
 
       case 'body-type':
         this.options = BODY_TYPES;

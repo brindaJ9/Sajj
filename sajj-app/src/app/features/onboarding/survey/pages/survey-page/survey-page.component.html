@@ -1,24 +1,27 @@
-<app-progress-bar
-  [current]="currentStep"
-  [total]="totalSteps">
-</app-progress-bar>
+<div class="survey-container">
+  <div class="survey-header">
+    <h1 class="brand-title">Sajj</h1>
+  </div>
 
-<app-question-card
-  [question]="questions[currentStep]"
-  (selectedOption)="selectAnswer(questions[currentStep].id, $event)">
-</app-question-card>
+  <div class="survey-card">
+    <app-progress-bar
+      [current]="currentStep"
+      [total]="totalSteps">
+    </app-progress-bar>
 
-<div class="navigation">
+    <app-question-card
+      [question]="questions[currentStep]"
+      [selectedAnswer]="answers[questions[currentStep].id]"
+      (selectedOption)="selectAnswer(questions[currentStep].id, $event)">
+    </app-question-card>
 
-  <button
-    (click)="previousQuestion()"
-    [disabled]="currentStep === 0">
-    Back
-  </button>
-
-  <button
-    (click)="nextQuestion()">
-    Next
-  </button>
-
+    <div class="navigation">
+      <button
+        class="next-button"
+        (click)="nextQuestion()"
+        [disabled]="!answers[questions[currentStep].id]">
+        {{ currentStep === totalSteps - 1 ? 'Finish' : 'Next' }} →
+      </button>
+    </div>
+  </div>
 </div>

@@ -10,29 +10,21 @@
 
   <div class="options">
 
-    <button
+    <label
       class="option"
       *ngFor="let option of options"
-      (click)="onSelect(option)"
+      [class.selected]="selectedAnswer === option.id"
     >
-
-      <span *ngIf="option.emoji" class="emoji">
-        {{ option.emoji }}
-      </span>
-
-      <div class="content">
-
-        <div class="label">
-          {{ option.label }}
-        </div>
-
-        <div *ngIf="option.description" class="description">
-          {{ option.description }}
-        </div>
-
-      </div>
-
-    </button>
+      <input
+        type="radio"
+        [name]="question.id"
+        [value]="option.id"
+        [checked]="selectedAnswer === option.id"
+        (change)="onSelect(option)"
+      />
+      <span class="radio-circle"></span>
+      <span class="option-label">{{ option.label }}</span>
+    </label>
 
   </div>
 

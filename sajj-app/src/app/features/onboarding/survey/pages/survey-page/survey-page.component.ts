@@ -50,8 +50,8 @@ export class SurveyPageComponent {
 
     const result = {
       archetype: "placeholder", // will compute later
-      body_type: this.answers['q1'],
-      style_genre: this.answers['q2'],
+      style_vibe: this.answers['q1'],
+      body_type: this.answers['q2'],
       occasions: this.answers['q3'],
       color_palette: this.answers['q4'],
       fit_vibe: this.answers['q5'],

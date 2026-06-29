@@ -1,1 +1,8 @@
-<p>progress-bar works!</p>
+<div class="progress-container">
+  <div class="progress-header">
+    <span class="step-text">STEP {{ current + 1 }} OF {{ total }}</span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" [style.width.%]="percentage"></div>
+  </div>
+</div>

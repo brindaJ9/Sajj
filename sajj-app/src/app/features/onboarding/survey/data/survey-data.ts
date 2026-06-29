@@ -1,4 +1,16 @@
 // ---------------------------------------------------------------------------
+// Style Vibe (Simple options for first question)
+// ---------------------------------------------------------------------------
+export const STYLE_VIBES = [
+  { id: "minimalist", label: "Minimalist" },
+  { id: "streetwear", label: "Streetwear" },
+  { id: "bohemian", label: "Bohemian" },
+  { id: "classic", label: "Classic" },
+  { id: "avant-garde", label: "Avant-garde" },
+  { id: "athleisure", label: "Athleisure" },
+];
+
+// ---------------------------------------------------------------------------
 // Body Type entries — image strip (5 columns: pear, pear-variant, inverted-triangle, rectangle, hourglass)
 // We map each to a horizontal offset in the strip image (0%–100% in 4 steps)
 // ---------------------------------------------------------------------------

@@ -3,15 +3,15 @@ import { Question } from "../models/question.model";
 export const QUESTIONS: Question[] = [
   {
     id: "q1",
-    title: "What's your body type?",
-    subtitle: "We'll suggest silhouettes that flatter your natural shape",
-    type: "body-type",
+    title: "What's your style vibe?",
+    subtitle: "Pick the one that resonates most with you",
+    type: "style-vibe",
   },
   {
     id: "q2",
-    title: "What's your style?",
-    subtitle: "Pick your main vibe — then dive deeper into sub-genres",
-    type: "style-genre",
+    title: "What's your body type?",
+    subtitle: "We'll suggest silhouettes that flatter your natural shape",
+    type: "body-type",
   },
   {
     id: "q3",
