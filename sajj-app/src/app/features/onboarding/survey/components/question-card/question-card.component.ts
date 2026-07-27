@@ -1,15 +1,7 @@
-import { Component, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import {
-  STYLE_VIBES,
-  BODY_TYPES,
-  STYLE_GENRES,
-  OCCASIONS,
-  COLOR_PALETTES,
-  FIT_VIBES,
-  BUDGET_STYLES
-} from '../../data/survey-data';
+import { Question } from '../../models/question.model';
 
 @Component({
   selector: 'app-question-card',
@@ -18,58 +10,13 @@ import {
   templateUrl: './question-card.component.html',
   styleUrl: './question-card.component.scss',
 })
-export class QuestionCard implements OnChanges{
+export class QuestionCard {
 
-  @Input() question: any;
-  @Input() selectedAnswer: string | undefined;
+  @Input() question!: Question;
 
-  @Output() selectedOption = new EventEmitter<string>();
+  @Input() selectedAnswer: any;
 
-   options: any[] = [];
-
-  ngOnChanges() {
-    this.setOptions();
-  }
-
-  setOptions() {
-
-    if (!this.question) return;
-
-    switch (this.question.type) {
-
-      case 'style-vibe':
-        this.options = STYLE_VIBES;
-        break;
-
-      case 'body-type':
-        this.options = BODY_TYPES;
-        break;
-
-      case 'style-genre':
-        this.options = STYLE_GENRES;
-        break;
-
-      case 'occasions':
-        this.options = OCCASIONS;
-        break;
-
-      case 'color-palette':
-        this.options = COLOR_PALETTES;
-        break;
-
-      case 'fit-vibe':
-        this.options = FIT_VIBES;
-        break;
-
-      case 'budget-philosophy':
-        this.options = BUDGET_STYLES;
-        break;
-
-      default:
-        this.options = [];
-    }
-
-  }
+  @Output() selectedOption = new EventEmitter<any>();
 
   onSelect(option: any) {
     this.selectedOption.emit(option.id);
