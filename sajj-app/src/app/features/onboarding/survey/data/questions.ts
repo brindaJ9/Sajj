@@ -5,9 +5,8 @@ export const QUESTIONS: Question[] = [
   {
     id: "styles",
     title: "What styles resonate with you?",
-    subtitle: "Choose up to 3 styles that best represent your aesthetic.",
+    subtitle: "Select all that apply.",
     type: "multiple",
-    maxSelections: 3,
     options: [
       { id: "minimalist", label: "Minimalist" },
       { id: "old-money", label: "Old Money" },
@@ -111,7 +110,11 @@ export const QUESTIONS: Question[] = [
     id: "adventure",
     title: "How adventurous is your style?",
     subtitle: "Tell us how open you are to trying something new.",
-    type: "slider"
+    type: "slider",
+    sliderMin: 0,
+    sliderMax: 100,
+    sliderMinLabel: "Safe",
+    sliderMaxLabel: "Adventurous"
   }
 
 ];

@@ -28,8 +28,23 @@ export class SurveyPageComponent {
     return this.questions.length;
   }
 
-  selectAnswer(questionId: string, value: any) {
+  selectAnswer(questionId: string, value: unknown) {
     this.answers[questionId] = value;
+  }
+
+  canProceed(): boolean {
+    const question = this.questions[this.currentStep];
+    const answer = this.answers[question.id];
+
+    if (question.type === 'multiple') {
+      return Array.isArray(answer) && answer.length > 0;
+    }
+
+    if (question.type === 'slider') {
+      return answer !== undefined && answer !== null;
+    }
+
+    return answer != null && answer !== '';
   }
 
   nextQuestion() {
@@ -55,7 +70,8 @@ export class SurveyPageComponent {
       occasions: this.answers['q3'],
       color_palette: this.answers['q4'],
       fit_vibe: this.answers['q5'],
-      budget_style: this.answers['q6']
+      budget_style: this.answers['q6'],
+      adventure_level: this.answers['adventure']
     };
 
   this.surveyService.saveQuizResult(result);

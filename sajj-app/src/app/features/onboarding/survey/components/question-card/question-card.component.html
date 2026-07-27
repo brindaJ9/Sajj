@@ -8,24 +8,54 @@
     {{ question.subtitle }}
   </p>
 
-  <div class="options" *ngIf="question.options">
+  <div class="slider" *ngIf="question.type === 'slider'">
+    <div class="slider-headings">
+      <span class="slider-heading">{{ question.sliderMinLabel }}</span>
+      <span class="slider-heading">{{ question.sliderMaxLabel }}</span>
+    </div>
+    <input
+      class="slider-input"
+      type="range"
+      [min]="sliderMin"
+      [max]="sliderMax"
+      [value]="sliderValue"
+      (input)="onSliderChange($event)"
+    />
+  </div>
 
+  <div class="options" *ngIf="question.options && question.type === 'multiple'">
     <label
       class="option"
       *ngFor="let option of question.options"
-      [class.selected]="selectedAnswer === option.id"
+      [class.selected]="isOptionSelected(option.id)"
+    >
+      <input
+        type="checkbox"
+        [value]="option.id"
+        [checked]="isOptionSelected(option.id)"
+        (change)="onMultiSelect(option)"
+      />
+      <span class="checkbox-square"></span>
+      <span class="option-label">{{ option.label }}</span>
+    </label>
+  </div>
+
+  <div class="options" *ngIf="question.options && question.type === 'single'">
+    <label
+      class="option"
+      *ngFor="let option of question.options"
+      [class.selected]="isOptionSelected(option.id)"
     >
       <input
         type="radio"
         [name]="question.id"
         [value]="option.id"
         [checked]="selectedAnswer === option.id"
-        (change)="onSelect(option)"
+        (change)="onSingleSelect(option)"
       />
       <span class="radio-circle"></span>
       <span class="option-label">{{ option.label }}</span>
     </label>
-
   </div>
 
 </div>

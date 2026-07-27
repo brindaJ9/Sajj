@@ -19,7 +19,7 @@
       <button
         class="next-button"
         (click)="nextQuestion()"
-        [disabled]="!answers[questions[currentStep].id]">
+        [disabled]="!canProceed()">
         {{ currentStep === totalSteps - 1 ? 'Finish' : 'Next' }} →
       </button>
     </div>

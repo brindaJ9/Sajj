@@ -7,4 +7,5 @@ export interface QuizResult {
   color_palette?: string;
   fit_vibe?: string;
   budget_style?: string;
+  adventure_level?: number;
 }
