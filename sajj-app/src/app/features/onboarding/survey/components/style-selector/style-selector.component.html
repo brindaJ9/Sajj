@@ -1,0 +1,73 @@
+<div class="style-selector">
+  <!-- Header -->
+  <div class="selector-header">
+    <p class="section-label">STYLE GENRE</p>
+    <h2 class="selector-title">
+      What styles <span class="highlight">resonate</span> with you?
+    </h2>
+    <p class="selector-description">
+      Choose one — this shapes the collections we surface first.
+    </p>
+  </div>
+
+  <!-- Style Grid -->
+  <div class="style-grid">
+    @for (style of styleOptions; track style.id; let i = $index) {
+      <button
+        type="button"
+        class="style-card"
+        [class.selected]="selectedStyle() === style.id"
+        [style.--card-color]="style.color"
+        [style.--card-color-rgb]="style.colorRgb"
+        [style.--i]="i"
+        (click)="selectStyle(style.id)">
+        
+        <div class="card-content">
+          <span class="style-emoji">{{ style.emoji }}</span>
+          <div class="style-info">
+            <h3 class="style-label">{{ style.label }}</h3>
+            <p class="style-description">{{ style.description }}</p>
+          </div>
+        </div>
+        
+        <div class="card-indicator">
+          @if (selectedStyle() === style.id) {
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="10" cy="10" r="5" fill="currentColor"/>
+            </svg>
+          } @else {
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+          }
+        </div>
+      </button>
+    }
+  </div>
+
+  <!-- Expandable Traits Section -->
+  <div 
+    class="traits-container"
+    [@expandCollapse]="expandState()">
+    @if (selectedStyleOption(); as option) {
+      <div class="traits-content">
+        <h3 class="traits-title">
+          WHAT KIND OF {{ option.label.toUpperCase() }}?
+        </h3>
+        
+        <div class="traits-grid">
+          @for (trait of option.traits; track trait.id) {
+            <button
+              type="button"
+              class="trait-chip"
+              [class.selected]="isTraitSelected(trait.id)"
+              (click)="toggleTrait(trait.id)">
+              {{ trait.label }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ProgressBar } from '../../components/progress-bar/progress-bar.component';
 import { QuestionCard } from '../../components/question-card/question-card.component';
+import { StyleSelectorComponent } from '../../components/style-selector/style-selector.component';
 import { QUESTIONS } from '../../data/questions';
 import { Question } from '../../models/question.model';
 import { SurveyService } from '../../services/survey.service';
@@ -8,7 +9,7 @@ import { SurveyService } from '../../services/survey.service';
 @Component({
   selector: 'app-survey-page',
   standalone: true,
-  imports: [ProgressBar, QuestionCard],
+  imports: [ProgressBar, QuestionCard, StyleSelectorComponent],
   templateUrl: './survey-page.component.html',
   styleUrls: ['./survey-page.component.scss'],
 })
@@ -22,10 +23,25 @@ export class SurveyPageComponent {
 
   answers: Record<string, any> = {};
 
+  // Track style selector data separately
+  styleSelection: { style: string; traits: string[] } | null = null;
+
   constructor(private surveyService: SurveyService) {}
 
   get totalSteps(){
     return this.questions.length;
+  }
+
+  get isStyleSelectorStep(): boolean {
+    // First question (styles) should use the new component
+    return this.currentStep === 0 && this.questions[0]?.id === 'styles';
+  }
+
+  onStyleSelected(selection: { style: string; traits: string[] }) {
+    this.styleSelection = selection;
+    // Store in answers for consistency
+    this.answers['styles'] = [selection.style];
+    this.answers['style-traits'] = selection.traits;
   }
 
   selectAnswer(questionId: string, value: unknown) {
@@ -33,6 +49,11 @@ export class SurveyPageComponent {
   }
 
   canProceed(): boolean {
+    // If it's the style selector step, check if style is selected
+    if (this.isStyleSelectorStep) {
+      return this.styleSelection !== null;
+    }
+
     const question = this.questions[this.currentStep];
     const answer = this.answers[question.id];
 
@@ -65,12 +86,12 @@ export class SurveyPageComponent {
 
     const result = {
       archetype: "placeholder", // will compute later
-      style_vibe: this.answers['q1'],
-      body_type: this.answers['q2'],
-      occasions: this.answers['q3'],
-      color_palette: this.answers['q4'],
-      fit_vibe: this.answers['q5'],
-      budget_style: this.answers['q6'],
+      style_vibe: this.styleSelection?.style || this.answers['styles'],
+      style_traits: this.styleSelection?.traits || [],
+      occasions: this.answers['occasions'],
+      challenge: this.answers['challenge'],
+      color_palette: this.answers['colors'],
+      fit_vibe: this.answers['fit'],
       adventure_level: this.answers['adventure']
     };
 

@@ -1,3 +1,12 @@
+<div class="bg-aura">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="blob blob-4"></div>
+  <div class="blob blob-5"></div>
+</div>
+<div class="grain"></div>
+
 <div class="survey-container">
   <div class="survey-header">
     <h1 class="brand-title">Sajj</h1>
@@ -5,22 +14,36 @@
 
   <div class="survey-card">
     <app-progress-bar
-      [current]="currentStep"
+      [current]="currentStep + 1"
       [total]="totalSteps">
     </app-progress-bar>
 
-    <app-question-card
-      [question]="questions[currentStep]"
-      [selectedAnswer]="answers[questions[currentStep].id]"
-      (selectedOption)="selectAnswer(questions[currentStep].id, $event)">
-    </app-question-card>
+    @if (isStyleSelectorStep) {
+      <app-style-selector 
+        (selectionChange)="onStyleSelected($event)">
+      </app-style-selector>
+    } @else {
+      <app-question-card
+        [question]="questions[currentStep]"
+        [selectedAnswer]="answers[questions[currentStep].id]"
+        (selectedOption)="selectAnswer(questions[currentStep].id, $event)">
+      </app-question-card>
+    }
 
     <div class="navigation">
+      @if (currentStep > 0) {
+        <button
+          class="back-button"
+          (click)="previousQuestion()">
+          ← Back
+        </button>
+      }
+      
       <button
         class="next-button"
         (click)="nextQuestion()"
         [disabled]="!canProceed()">
-        {{ currentStep === totalSteps - 1 ? 'Finish' : 'Next' }} →
+        {{ currentStep === totalSteps - 1 ? 'Finish' : 'Continue' }} →
       </button>
     </div>
   </div>
