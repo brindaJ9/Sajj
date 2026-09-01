@@ -1,49 +1,56 @@
+@import '../../styles/survey-shared.scss';
+
 .question-card {
   text-align: center;
   flex: 1;
 }
 
 .title {
-  font-size: 32px;
-  font-weight: 400;
+  font-family: 'Fraunces', serif;
+  font-size: clamp(28px, 4.4vw, 40px);
+  font-weight: 480;
   margin-bottom: 12px;
-  color: #2c2c2c;
+  color: var(--ink);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
 }
 
 .subtitle {
-  color: #999;
+  font-family: 'Inter', sans-serif;
+  font-size: 15.5px;
+  color: var(--ink-soft);
   margin-bottom: 40px;
-  font-size: 15px;
+  line-height: 1.55;
 }
 
 .options {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  max-width: 600px;
+  gap: 12px;
+  max-width: 640px;
   margin: 0 auto;
 }
 
 .option {
-  border: 2px solid #e0e0e0;
-  padding: 18px 20px;
-  border-radius: 12px;
-  background: white;
-  cursor: pointer;
+  @include card-base;
+  padding: 16px 18px;
   display: flex;
   align-items: center;
   gap: 12px;
-  transition: all 0.2s ease;
-  position: relative;
   text-align: left;
+  position: relative;
+  @include stagger-animation(55ms);
 
   &:hover {
-    border-color: #c0c0c0;
+    @include card-hover;
+  }
+
+  &:active {
+    @include card-active;
   }
 
   &.selected {
-    border-color: #2c2c2c;
-    background: #fafafa;
+    @include selection-gradient;
   }
 
   input[type="radio"],
@@ -53,73 +60,19 @@
     pointer-events: none;
   }
 
-  .radio-circle {
-    width: 20px;
-    height: 20px;
-    border: 2px solid #d0d0d0;
-    border-radius: 50%;
-    flex-shrink: 0;
-    position: relative;
-    transition: all 0.2s ease;
-
-    &::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0);
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #2c2c2c;
-      transition: transform 0.2s ease;
-    }
-  }
-
-  &.selected .radio-circle {
-    border-color: #2c2c2c;
-
-    &::after {
-      transform: translate(-50%, -50%) scale(1);
-    }
-  }
-
+  .radio-circle,
   .checkbox-square {
-    width: 20px;
-    height: 20px;
-    border: 2px solid #d0d0d0;
-    border-radius: 4px;
-    flex-shrink: 0;
-    position: relative;
-    transition: all 0.2s ease;
-
-    &::after {
-      content: '';
-      position: absolute;
-      top: 2px;
-      left: 6px;
-      width: 5px;
-      height: 10px;
-      border: solid #2c2c2c;
-      border-width: 0 2px 2px 0;
-      transform: rotate(45deg) scale(0);
-      transition: transform 0.2s ease;
-    }
+    @include radio-button;
   }
 
+  &.selected .radio-circle,
   &.selected .checkbox-square {
-    border-color: #2c2c2c;
-    background: #fafafa;
-
-    &::after {
-      transform: rotate(45deg) scale(1);
-    }
+    @include radio-button-selected;
   }
 
   .option-label {
-    font-size: 16px;
-    color: #2c2c2c;
-    font-weight: 400;
+    @include option-label;
+    flex: 1;
   }
 }
 
@@ -134,41 +87,63 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 16px;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
 }
 
 .slider-heading {
-  font-size: 18px;
-  font-weight: 500;
-  color: #2c2c2c;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-soft);
+
+  &:first-child {
+    text-align: left;
+  }
+
+  &:last-child {
+    text-align: right;
+  }
 }
 
 .slider-input {
   width: 100%;
-  height: 6px;
+  height: 8px;
   margin: 0;
   appearance: none;
-  background: #e0e0e0;
-  border-radius: 3px;
+  background: linear-gradient(90deg, var(--indigo), var(--ibis), var(--paris));
+  border-radius: 99px;
   cursor: pointer;
+  outline: none;
 
   &::-webkit-slider-thumb {
     appearance: none;
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
-    background: #2c2c2c;
-    border: 2px solid white;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    background: var(--paper);
+    border: 4px solid var(--paris);
+    box-shadow: 0 6px 16px -4px rgba(167, 110, 155, 0.6);
+    cursor: grab;
+    transition: transform 0.2s var(--ease);
+
+    &:active {
+      transform: scale(1.15);
+      cursor: grabbing;
+    }
   }
 
   &::-moz-range-thumb {
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
-    background: #2c2c2c;
-    border: 2px solid white;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    background: var(--paper);
+    border: 4px solid var(--paris);
+    box-shadow: 0 6px 16px -4px rgba(167, 110, 155, 0.6);
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
   }
 }
 
@@ -178,6 +153,40 @@
   }
 
   .title {
-    font-size: 24px;
+    font-size: 26px;
+  }
+}
+
+// Color palette swatches
+.option.with-swatches {
+  .option-label {
+    flex: 1;
+  }
+}
+
+.color-swatches {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-left: auto;
+  padding-left: 12px;
+}
+
+.color-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  
+  // Add visible border for very light colors
+  &[style*="#E8E8E8"],
+  &[style*="#F3EEE7"],
+  &[style*="#DCEAF2"],
+  &[style*="#F4DDE3"],
+  &[style*="#F3E5C8"],
+  &[style*="#E4D5BD"] {
+    border-color: rgba(0, 0, 0, 0.15);
   }
 }

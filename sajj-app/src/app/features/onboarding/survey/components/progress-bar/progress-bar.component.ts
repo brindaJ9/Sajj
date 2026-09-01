@@ -12,7 +12,7 @@ export class ProgressBar {
   @Input() total!: number;
 
   get percentage(): number{
-    return ((this.current + 1) / this.total) * 100;
+    return (this.current / this.total) * 100;
   }
 
 }

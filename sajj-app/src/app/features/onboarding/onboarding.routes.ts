@@ -6,5 +6,11 @@ export const ONBOARDING_ROUTES: Routes = [
     loadComponent: () =>
       import('./survey/pages/survey-page/survey-page.component')
         .then(m => m.SurveyPageComponent)
+  },
+  {
+    path: 'results',
+    loadComponent: () =>
+      import('./survey/pages/results-page/results-page.component')
+        .then(m => m.ResultsPageComponent)
   }
 ];

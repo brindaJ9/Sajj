@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { ProgressBar } from '../../components/progress-bar/progress-bar.component';
 import { QuestionCard } from '../../components/question-card/question-card.component';
 import { StyleSelectorComponent } from '../../components/style-selector/style-selector.component';
@@ -26,7 +27,10 @@ export class SurveyPageComponent {
   // Track style selector data separately
   styleSelection: { style: string; traits: string[] } | null = null;
 
-  constructor(private surveyService: SurveyService) {}
+  constructor(
+    private surveyService: SurveyService,
+    private router: Router
+  ) {}
 
   get totalSteps(){
     return this.questions.length;
@@ -95,9 +99,12 @@ export class SurveyPageComponent {
       adventure_level: this.answers['adventure']
     };
 
-  this.surveyService.saveQuizResult(result);
+    this.surveyService.saveQuizResult(result);
 
     console.log("Quiz result saved:", result);
+    
+    // Navigate to results page
+    this.router.navigate(['/onboarding/results']);
   }
 
 }

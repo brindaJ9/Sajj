@@ -25,4 +25,8 @@ export class SurveyService {
     return this.quizResult;
   }
 
+  getLatestResult(): QuizResult | null {
+    return this.quizResult;
+  }
+
 }

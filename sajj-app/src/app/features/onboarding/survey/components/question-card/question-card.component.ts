@@ -9,6 +9,7 @@ import {
 import { CommonModule } from '@angular/common';
 
 import { Question } from '../../models/question.model';
+import { getPaletteColors } from '../../data/color-palettes.data';
 
 export type SurveyAnswerValue = string | number | string[];
 
@@ -39,6 +40,10 @@ export class QuestionCard implements OnChanges {
       return this.selectedAnswer;
     }
     return Math.round((this.sliderMin + this.sliderMax) / 2);
+  }
+
+  get isColorPaletteQuestion(): boolean {
+    return this.question?.id === 'colors';
   }
 
   ngOnChanges(_changes: SimpleChanges): void {
@@ -83,5 +88,9 @@ export class QuestionCard implements OnChanges {
   onSliderChange(event: Event) {
     const value = Number((event.target as HTMLInputElement).value);
     this.selectedOption.emit(value);
+  }
+
+  getPaletteColors(optionId: string): string[] {
+    return getPaletteColors(optionId);
   }
 }
