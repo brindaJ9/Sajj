@@ -1,4 +1,4 @@
-@import '../../styles/survey-shared.scss';
+@use '../../styles/survey-shared.scss' as *;
 
 .question-card {
   text-align: center;

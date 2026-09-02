@@ -12,13 +12,37 @@
 
 <!-- Dashboard container -->
 <div class="dashboard-container">
-  <!-- Logo in top left -->
+  <!-- Header with logo and weather on left side -->
   <header class="dashboard-header">
-    <h1 class="brand-logo">Sajj</h1>
+    <div class="header-left">
+      <h1 class="brand-logo">Sajj</h1>
+      
+      <!-- Weather indicator below logo -->
+      <div class="weather-indicator">
+        @if (weatherService.isLoading()) {
+          <span class="weather-loading">Loading weather...</span>
+        } @else if (weatherService.weatherData()) {
+          <span class="weather-display">
+            <span class="weather-icon">{{ weatherService.weatherData()!.icon }}</span>
+            <span class="weather-temp">{{ weatherService.weatherData()!.temperature }}°</span>
+          </span>
+        } @else if (weatherService.error()) {
+          <span class="weather-unavailable">Weather unavailable</span>
+        }
+      </div>
+    </div>
   </header>
 
-  <!-- Main content area (empty for now) -->
+  <!-- Main content area -->
   <main class="dashboard-content">
-    <!-- Content will be added later -->
+    <!-- Hero section -->
+    <section class="hero-section">
+      <h2 class="hero-headline">What are we wearing today?</h2>
+      
+      <!-- Avatar/outfit display will be added later -->
+      <div class="outfit-display">
+        <!-- Placeholder for future avatar/outfit component -->
+      </div>
+    </section>
   </main>
 </div>
