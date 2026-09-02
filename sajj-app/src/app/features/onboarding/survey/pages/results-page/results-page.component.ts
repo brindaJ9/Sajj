@@ -52,7 +52,6 @@ export class ResultsPageComponent implements OnInit {
   }
 
   exploreStyleSculpt() {
-    // Navigate to main app or dashboard
     this.router.navigate(['/dashboard']);
   }
 

@@ -13,12 +13,12 @@ export const routes: Routes = [
         .then(m => m.ONBOARDING_ROUTES)
   },
 
-  //{
-    //path: 'dashboard',
-    //loadChildren: () =>
-      //import('./features/dashboard/dashboard.routes')
-        //.then(m => m.DASHBOARD_ROUTES)
- // },
+  {
+    path: 'dashboard',
+    loadChildren: () =>
+      import('./features/dashboard/dashboard.routes')
+        .then(m => m.DASHBOARD_ROUTES)
+  },
 
   {
     path: '**',
