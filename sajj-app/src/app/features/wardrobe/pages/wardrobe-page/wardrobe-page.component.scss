@@ -1,0 +1,30 @@
+@use '../../../dashboard/pages/dashboard-page/dashboard-page.component.scss' as *;
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 48px;
+}
+
+.page-content {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.page-title {
+  font-family: 'Fraunces', serif;
+  font-size: 48px;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0 0 12px 0;
+  letter-spacing: -0.02em;
+}
+
+.page-description {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  color: var(--ink);
+  opacity: 0.6;
+  margin: 0;
+}

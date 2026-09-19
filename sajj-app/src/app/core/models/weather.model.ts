@@ -4,6 +4,7 @@ export interface WeatherData {
   condition: string;
   icon: string;
   city?: string;
+  country?: string;
 }
 
 export interface GeolocationCoordinates {
@@ -16,4 +17,15 @@ export interface OpenMeteoResponse {
     temperature_2m: number;
     weather_code: number;
   };
+}
+
+export interface ReverseGeocodeResponse {
+  address?: {
+    city?: string;
+    town?: string;
+    village?: string;
+    state?: string;
+    country?: string;
+  };
+  display_name?: string;
 }

@@ -108,6 +108,9 @@
 }
 
 .dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   margin-bottom: 48px;
 }
 
@@ -116,6 +119,10 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 12px;
+}
+
+.header-right {
+  flex-shrink: 0;
 }
 
 .brand-logo {
@@ -130,29 +137,56 @@
 /* Weather indicator - positioned below logo on left side */
 .weather-indicator {
   font-family: 'Inter', sans-serif;
-  font-size: 15px;
   color: var(--ink);
   opacity: 0.7;
-  display: flex;
-  align-items: center;
-  gap: 6px;
   margin-left: 4px;
 }
 
 .weather-display {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .weather-icon {
-  font-size: 18px;
+  font-size: 24px;
   line-height: 1;
+  margin-top: 2px;
+}
+
+.weather-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.weather-temp-condition {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  line-height: 1.4;
 }
 
 .weather-temp {
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -0.01em;
+}
+
+.weather-separator {
+  opacity: 0.4;
+}
+
+.weather-condition {
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.weather-location {
+  font-size: 13px;
+  font-weight: 400;
+  opacity: 0.8;
+  letter-spacing: 0.01em;
 }
 
 .weather-loading,
@@ -200,12 +234,16 @@
     font-size: 36px;
   }
 
-  .weather-indicator {
-    font-size: 13px;
+  .weather-icon {
+    font-size: 20px;
   }
 
-  .weather-icon {
-    font-size: 16px;
+  .weather-temp-condition {
+    font-size: 14px;
+  }
+
+  .weather-location {
+    font-size: 12px;
   }
 
   .hero-headline {

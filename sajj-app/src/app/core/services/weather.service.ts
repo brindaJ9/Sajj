@@ -1,13 +1,14 @@
 import { Injectable, signal, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { WeatherData, GeolocationCoordinates, OpenMeteoResponse } from '../models/weather.model';
+import { WeatherData, GeolocationCoordinates, OpenMeteoResponse, ReverseGeocodeResponse } from '../models/weather.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WeatherService {
   private readonly OPEN_METEO_API = 'https://api.open-meteo.com/v1/forecast';
+  private readonly GEOCODING_API = 'https://nominatim.openstreetmap.org/reverse';
   private platformId = inject(PLATFORM_ID);
   
   // Signals for reactive state
@@ -32,7 +33,7 @@ export class WeatherService {
 
     try {
       const coords = await this.getUserLocation();
-      await this.fetchWeather(coords);
+      await this.fetchWeatherAndLocation(coords);
     } catch (err) {
       this.handleError(err);
     } finally {
@@ -69,26 +70,80 @@ export class WeatherService {
   }
 
   /**
-   * Fetch weather data from Open-Meteo API
+   * Fetch weather data and city name in parallel
    */
-  private async fetchWeather(coords: GeolocationCoordinates): Promise<void> {
-    const url = `${this.OPEN_METEO_API}?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,weather_code&temperature_unit=celsius`;
-
+  private async fetchWeatherAndLocation(coords: GeolocationCoordinates): Promise<void> {
     try {
-      const response = await this.http.get<OpenMeteoResponse>(url).toPromise();
-      
-      if (response?.current) {
+      // Fetch weather and location data in parallel
+      const [weatherResponse, locationResponse] = await Promise.all([
+        this.fetchWeather(coords),
+        this.fetchCityName(coords)
+      ]);
+
+      if (weatherResponse?.current) {
         const weatherData: WeatherData = {
-          temperature: Math.round(response.current.temperature_2m),
-          weatherCode: response.current.weather_code,
-          condition: this.mapWeatherCodeToCondition(response.current.weather_code),
-          icon: this.mapWeatherCodeToIcon(response.current.weather_code)
+          temperature: Math.round(weatherResponse.current.temperature_2m),
+          weatherCode: weatherResponse.current.weather_code,
+          condition: this.mapWeatherCodeToCondition(weatherResponse.current.weather_code),
+          icon: this.mapWeatherCodeToIcon(weatherResponse.current.weather_code),
+          city: locationResponse.city,
+          country: locationResponse.country
         };
         
         this.weatherData.set(weatherData);
       }
     } catch (err) {
+      throw new Error('Failed to fetch weather and location data');
+    }
+  }
+
+  /**
+   * Fetch weather data from Open-Meteo API
+   */
+  private async fetchWeather(coords: GeolocationCoordinates): Promise<OpenMeteoResponse> {
+    const url = `${this.OPEN_METEO_API}?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,weather_code&temperature_unit=celsius`;
+
+    try {
+      const response = await this.http.get<OpenMeteoResponse>(url).toPromise();
+      if (!response) {
+        throw new Error('No weather data received');
+      }
+      return response;
+    } catch (err) {
       throw new Error('Failed to fetch weather data');
+    }
+  }
+
+  /**
+   * Fetch city name using reverse geocoding from OpenStreetMap Nominatim
+   */
+  private async fetchCityName(coords: GeolocationCoordinates): Promise<{ city?: string; country?: string }> {
+    const url = `${this.GEOCODING_API}?format=json&lat=${coords.latitude}&lon=${coords.longitude}&zoom=10`;
+
+    try {
+      const response = await this.http.get<ReverseGeocodeResponse>(url, {
+        headers: {
+          'User-Agent': 'Sajj-StyleApp/1.0' // Required by Nominatim usage policy
+        }
+      }).toPromise();
+
+      if (!response) {
+        return {};
+      }
+
+      // Extract city name (prioritize city, then town, then village)
+      const city = response.address?.city || 
+                   response.address?.town || 
+                   response.address?.village ||
+                   response.address?.state;
+
+      return {
+        city,
+        country: response.address?.country
+      };
+    } catch (err) {
+      // City name is optional, don't fail if geocoding fails
+      return {};
     }
   }
 

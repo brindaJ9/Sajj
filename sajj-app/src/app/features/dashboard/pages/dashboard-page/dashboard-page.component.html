@@ -12,7 +12,7 @@
 
 <!-- Dashboard container -->
 <div class="dashboard-container">
-  <!-- Header with logo and weather on left side -->
+  <!-- Header with logo, weather, and profile -->
   <header class="dashboard-header">
     <div class="header-left">
       <h1 class="brand-logo">Sajj</h1>
@@ -22,14 +22,28 @@
         @if (weatherService.isLoading()) {
           <span class="weather-loading">Loading weather...</span>
         } @else if (weatherService.weatherData()) {
-          <span class="weather-display">
+          <div class="weather-display">
             <span class="weather-icon">{{ weatherService.weatherData()!.icon }}</span>
-            <span class="weather-temp">{{ weatherService.weatherData()!.temperature }}°</span>
-          </span>
+            <div class="weather-info">
+              <div class="weather-temp-condition">
+                <span class="weather-temp">{{ weatherService.weatherData()!.temperature }}°</span>
+                <span class="weather-separator">·</span>
+                <span class="weather-condition">{{ weatherService.weatherData()!.condition }}</span>
+              </div>
+              @if (weatherService.weatherData()!.city) {
+                <div class="weather-location">{{ weatherService.weatherData()!.city }}</div>
+              }
+            </div>
+          </div>
         } @else if (weatherService.error()) {
           <span class="weather-unavailable">Weather unavailable</span>
         }
       </div>
+    </div>
+
+    <!-- Profile dropdown -->
+    <div class="header-right">
+      <app-profile-dropdown />
     </div>
   </header>
 
@@ -46,3 +60,6 @@
     </section>
   </main>
 </div>
+
+<!-- Floating bottom navigation -->
+<app-bottom-nav />
