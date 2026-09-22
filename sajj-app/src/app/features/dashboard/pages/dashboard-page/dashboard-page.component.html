@@ -51,7 +51,28 @@
   <main class="dashboard-content">
     <!-- Hero section -->
     <section class="hero-section">
-      <h2 class="hero-headline">What are we wearing today?</h2>
+      <h2 class="hero-headline">What are we wearing <em>today</em>?</h2>
+      <p class="hero-subtext">Same you. A more stylish day.</p>
+      
+      <!-- Style preview or empty state -->
+      @if (hasStyleProfile && archetype) {
+        <button class="style-preview" (click)="navigateToProfile()">
+          <span class="style-emoji">{{ archetype.emoji }}</span>
+          <div class="style-info">
+            <span class="style-name">{{ archetype.name }}</span>
+            <span class="style-traits">{{ archetype.traits.slice(0, 2).join(' · ') }}</span>
+          </div>
+          <span class="style-arrow">→</span>
+        </button>
+      } @else {
+        <div class="empty-state">
+          <h3 class="empty-state-title">Meet your style</h3>
+          <p class="empty-state-text">Tell us a little about how you dress so Sajj can personalize your experience.</p>
+          <button class="empty-state-button" (click)="startMeetYourStyle()">
+            Meet Your Style <span class="arrow">→</span>
+          </button>
+        </div>
+      }
       
       <!-- Avatar/outfit display will be added later -->
       <div class="outfit-display">

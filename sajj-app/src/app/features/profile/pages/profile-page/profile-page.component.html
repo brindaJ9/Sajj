@@ -11,14 +11,113 @@
 
 <div class="page-container">
   <header class="page-header">
-    <h1 class="brand-logo">Sajj</h1>
+    <button class="back-button" (click)="navigateBack()">
+      <span class="back-arrow">←</span>
+      <span class="back-text">Back</span>
+    </button>
     <app-profile-dropdown />
   </header>
 
-  <main class="page-content">
-    <h2 class="page-title">Your Profile</h2>
-    <p class="page-description">View and edit your profile settings</p>
-  </main>
+  @if (hasStyleProfile && archetype && quizResult) {
+    <main class="page-content">
+      <!-- Section title -->
+      <div class="section-intro">
+        <h1 class="section-title">Meet Your Style</h1>
+      </div>
+
+      <!-- Archetype card -->
+      <section class="archetype-card">
+        <div class="archetype-emoji">{{ archetype.emoji }}</div>
+        <h2 class="archetype-name">{{ archetype.name }}</h2>
+        <p class="archetype-tagline">{{ archetype.tagline }}</p>
+        <p class="archetype-description">{{ archetype.description }}</p>
+      </section>
+
+      <!-- Style traits -->
+      <section class="profile-section">
+        <h3 class="section-heading">Your Style Traits</h3>
+        <div class="traits-grid">
+          @for (trait of archetype.traits; track trait) {
+            <div class="trait-pill">{{ trait }}</div>
+          }
+        </div>
+      </section>
+
+      <!-- Color palette -->
+      @if (paletteColors.length > 0) {
+        <section class="profile-section">
+          <h3 class="section-heading">Your Palette</h3>
+          <p class="section-sublabel">{{ paletteLabel }}</p>
+          <div class="color-palette">
+            @for (color of paletteColors; track color) {
+              <div class="color-swatch" [style.background-color]="color"></div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Style at a glance -->
+      <section class="profile-section">
+        <h3 class="section-heading">Your Style at a Glance</h3>
+        
+        <div class="info-grid">
+          @if (quizResult.occasions && quizResult.occasions.length > 0) {
+            <div class="info-item">
+              <div class="info-label">Occasions</div>
+              <div class="info-value">
+                {{ quizResult.occasions.map(o => getOccasionLabel(o)).join(', ') }}
+              </div>
+            </div>
+          }
+
+          @if (quizResult.fit_vibe) {
+            <div class="info-item">
+              <div class="info-label">Fit Preference</div>
+              <div class="info-value">{{ getFitLabel(quizResult.fit_vibe) }}</div>
+            </div>
+          }
+
+          @if (quizResult.challenge) {
+            <div class="info-item">
+              <div class="info-label">Style Challenge</div>
+              <div class="info-value">{{ getChallengeLabel(quizResult.challenge) }}</div>
+            </div>
+          }
+
+          @if (quizResult.adventure_level !== undefined) {
+            <div class="info-item">
+              <div class="info-label">Adventure Level</div>
+              <div class="info-value">
+                {{ getAdventureLabel(quizResult.adventure_level) }}
+                <span class="adventure-bar">
+                  <span class="adventure-fill" [style.width.%]="quizResult.adventure_level"></span>
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Retake button -->
+      <div class="retake-section">
+        <button class="retake-button" (click)="retakeMeetYourStyle()">
+          <span class="retake-icon">↻</span>
+          Retake Meet Your Style
+        </button>
+      </div>
+    </main>
+  } @else {
+    <!-- Empty state -->
+    <main class="page-content empty-content">
+      <div class="empty-state">
+        <h1 class="empty-title">Meet your style</h1>
+        <p class="empty-text">Tell us a little about how you dress so Sajj can personalize your experience.</p>
+        <button class="empty-button" (click)="startMeetYourStyle()">
+          Meet Your Style <span class="arrow">→</span>
+        </button>
+      </div>
+    </main>
+  }
 </div>
 
 <app-bottom-nav />
