@@ -65,7 +65,7 @@
             <div class="info-item">
               <div class="info-label">Occasions</div>
               <div class="info-value">
-                {{ quizResult.occasions.map(o => getOccasionLabel(o)).join(', ') }}
+                {{ getFormattedOccasions() }}
               </div>
             </div>
           }

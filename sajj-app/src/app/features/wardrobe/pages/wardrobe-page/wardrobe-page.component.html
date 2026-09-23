@@ -13,14 +13,259 @@
 <!-- Page container -->
 <div class="page-container">
   <header class="page-header">
-    <h1 class="brand-logo">Sajj</h1>
-    <app-profile-dropdown />
+    <div class="header-left">
+      <h1 class="brand-logo">Sajj</h1>
+    </div>
+    <div class="header-right">
+      <app-profile-dropdown />
+    </div>
   </header>
 
   <main class="page-content">
-    <h2 class="page-title">Wardrobe</h2>
-    <p class="page-description">Add, edit or browse your pieces</p>
+    <!-- Wardrobe header -->
+    <div class="wardrobe-header">
+      <div class="header-text">
+        <p class="header-label">YOUR DIGITAL CLOSET</p>
+        <h2 class="wardrobe-title">Your Digital <em>Wardrobe</em></h2>
+        <p class="wardrobe-subtitle">
+          @if (getTotalCount() > 0) {
+            {{ getTotalCount() }} {{ getTotalCount() === 1 ? 'piece' : 'pieces' }}, ready whenever you are.
+          } @else {
+            Everything you already own, all in one place.
+          }
+        </p>
+      </div>
+      <button class="add-button" (click)="openAddModal()">
+        <span class="add-icon">+</span>
+        Add Item
+      </button>
+    </div>
+
+    <!-- Category filters -->
+    <div class="category-filters">
+      @for (cat of categories; track cat.id) {
+        <button 
+          class="category-button"
+          [class.active]="selectedCategory === cat.id"
+          (click)="selectCategory(cat.id)"
+        >
+          {{ cat.label }}
+        </button>
+      }
+    </div>
+
+    <!-- Wardrobe grid or empty state -->
+    @if (filteredItems.length > 0) {
+      <div class="wardrobe-grid">
+        @for (item of filteredItems; track item.id) {
+          <div class="clothing-card" (click)="openItemDetail(item)">
+            <div class="card-image-container">
+              <img [src]="item.imageUrl" [alt]="item.name" class="card-image" />
+              <div class="card-overlay">
+                <span class="view-text">View Details</span>
+              </div>
+            </div>
+            <div class="card-info">
+              <h3 class="card-title">{{ item.name }}</h3>
+              <p class="card-category">{{ getCategoryLabel(item.category) }}</p>
+              <p class="card-wear">Worn {{ item.wearCount }}×</p>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <div class="empty-content">
+          <h3 class="empty-title">Your closet is waiting.</h3>
+          <p class="empty-text">
+            Add the pieces you already love and we'll start building your digital wardrobe.
+          </p>
+          <button class="empty-button" (click)="openAddModal()">
+            <span class="add-icon">+</span>
+            Add your first piece
+          </button>
+        </div>
+      </div>
+    }
   </main>
 </div>
+
+<!-- Add/Edit Item Modal -->
+@if (showAddModal) {
+  <div class="modal-backdrop" (click)="closeAddModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">{{ isEditMode ? 'Edit Item' : 'Add to your wardrobe' }}</h3>
+        <button class="modal-close" (click)="closeAddModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <form (ngSubmit)="addItem()">
+          <!-- Image Upload -->
+          <div class="form-group">
+            <label class="form-label">Image</label>
+            @if (newItem.imageUrl) {
+              <div class="image-preview">
+                <img [src]="newItem.imageUrl" alt="Preview" />
+                <button type="button" class="remove-image" (click)="newItem.imageUrl = ''">×</button>
+              </div>
+            } @else {
+              <div class="upload-area">
+                <input 
+                  type="file" 
+                  id="imageUpload" 
+                  accept="image/*" 
+                  (change)="onFileSelected($event)"
+                  class="file-input"
+                />
+                <label for="imageUpload" class="upload-label">
+                  <span class="upload-icon">📷</span>
+                  <span class="upload-text">Upload Image</span>
+                </label>
+              </div>
+            }
+          </div>
+
+          <!-- Item Name -->
+          <div class="form-group">
+            <label class="form-label">Item Name *</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="newItem.name"
+              name="name"
+              placeholder="e.g., White Linen Shirt"
+              required
+            />
+          </div>
+
+          <!-- Category -->
+          <div class="form-group">
+            <label class="form-label">Category *</label>
+            <select 
+              class="form-select" 
+              [(ngModel)]="newItem.category"
+              name="category"
+              required
+            >
+              @for (cat of categories; track cat.id) {
+                @if (cat.id !== 'all') {
+                  <option [value]="cat.id">{{ cat.label }}</option>
+                }
+              }
+            </select>
+          </div>
+
+          <!-- Color -->
+          <div class="form-group">
+            <label class="form-label">Color</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="newItem.color"
+              name="color"
+              placeholder="e.g., Ivory"
+            />
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button type="button" class="button-secondary" (click)="closeAddModal()">
+              Cancel
+            </button>
+            <button type="submit" class="button-primary">
+              {{ isEditMode ? 'Update Item' : 'Add to Wardrobe' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Item Detail Modal -->
+@if (showDetailModal && selectedItem) {
+  <div class="modal-backdrop" (click)="closeDetailModal()">
+    <div class="modal-content detail-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeDetailModal()">×</button>
+
+      <div class="detail-content">
+        <div class="detail-image">
+          <img [src]="selectedItem.imageUrl" [alt]="selectedItem.name" />
+        </div>
+
+        <div class="detail-info">
+          <h2 class="detail-title">{{ selectedItem.name }}</h2>
+          <p class="detail-category">{{ getCategoryLabel(selectedItem.category) }}</p>
+
+          @if (selectedItem.color) {
+            <div class="detail-row">
+              <span class="detail-label">Color</span>
+              <span class="detail-value">{{ selectedItem.color }}</span>
+            </div>
+          }
+
+          @if (selectedItem.occasions && selectedItem.occasions.length > 0) {
+            <div class="detail-row">
+              <span class="detail-label">Occasions</span>
+              <span class="detail-value">{{ selectedItem.occasions.join(' · ') }}</span>
+            </div>
+          }
+
+          @if (selectedItem.styleTags && selectedItem.styleTags.length > 0) {
+            <div class="detail-row">
+              <span class="detail-label">Style</span>
+              <span class="detail-value">{{ selectedItem.styleTags.join(' · ') }}</span>
+            </div>
+          }
+
+          <div class="detail-row">
+            <span class="detail-label">Worn</span>
+            <span class="detail-value">{{ selectedItem.wearCount }} times</span>
+          </div>
+
+          @if (selectedItem.lastWorn) {
+            <div class="detail-row">
+              <span class="detail-label">Last worn</span>
+              <span class="detail-value">{{ formatDate(selectedItem.lastWorn) }}</span>
+            </div>
+          }
+
+          <div class="detail-actions">
+            <button class="button-secondary" (click)="markAsWorn()">
+              Mark as Worn
+            </button>
+            <button class="button-secondary" (click)="editItem()">
+              Edit
+            </button>
+            <button class="button-danger" (click)="confirmDelete()">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Delete Confirmation Modal -->
+@if (showDeleteConfirm && selectedItem) {
+  <div class="modal-backdrop" (click)="cancelDelete()">
+    <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
+      <div class="delete-modal-content">
+        <h3 class="modal-title">Remove this piece from your wardrobe?</h3>
+        <p class="modal-text">{{ selectedItem.name }} will be permanently removed.</p>
+        <div class="form-actions">
+          <button class="button-secondary" (click)="cancelDelete()">
+            Keep it
+          </button>
+          <button class="button-danger" (click)="deleteItem()">
+            Remove
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
 
 <app-bottom-nav />

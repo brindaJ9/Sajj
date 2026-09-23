@@ -103,6 +103,15 @@ export class ProfilePageComponent implements OnInit {
     return 'Very Safe';
   }
 
+  getFormattedOccasions(): string {
+    if (!this.quizResult?.occasions || this.quizResult.occasions.length === 0) {
+      return '';
+    }
+    return this.quizResult.occasions
+      .map(o => this.getOccasionLabel(o))
+      .join(', ');
+  }
+
   navigateBack() {
     this.router.navigate(['/dashboard']);
   }
