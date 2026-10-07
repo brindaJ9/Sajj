@@ -1,0 +1,5 @@
+# FastAPI - Modern, fast web framework for building APIs
+fastapi==0.115.5
+
+# Uvicorn - ASGI server to run FastAPI applications
+uvicorn[standard]==0.34.0
