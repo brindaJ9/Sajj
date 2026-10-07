@@ -7,20 +7,57 @@ import { ClothingItem, ClothingCategory } from '../models/clothing-item.model';
 })
 export class WardrobeService {
   private readonly STORAGE_KEY = 'sajj_wardrobe';
+  private readonly MIGRATION_KEY = 'sajj_wardrobe_sample_cleared';
   private items: ClothingItem[] = [];
   private isBrowser: boolean;
+
+  // Sample item names to detect and remove (one-time cleanup)
+  private readonly SAMPLE_ITEM_NAMES = [
+    'Ivory Knit Top',
+    'Brown Wide-Leg Trousers',
+    'Rose Slip Dress',
+    'Camel Trench Coat',
+    'White Sneakers',
+    'Gold Hoop Earrings',
+    'Black Shoulder Bag',
+    'Cream Cardigan'
+  ];
 
   constructor(@Inject(PLATFORM_ID) platformId: object) {
     this.isBrowser = isPlatformBrowser(platformId);
     
-    // Restore wardrobe from sessionStorage on service initialization
+    // Restore and clean up sample data if needed
     if (this.isBrowser) {
       this.restoreFromStorage();
+      this.removeSampleDataOneTime();
+    }
+  }
+
+  /**
+   * One-time removal of hardcoded sample data
+   * This only runs once and won't affect user-added items in the future
+   */
+  private removeSampleDataOneTime(): void {
+    try {
+      const migrationDone = sessionStorage.getItem(this.MIGRATION_KEY);
       
-      // If no items exist, seed with sample data for demo
-      if (this.items.length === 0) {
-        this.seedSampleData();
+      if (migrationDone !== 'true') {
+        // Remove any items that match the sample data names
+        const originalLength = this.items.length;
+        this.items = this.items.filter(
+          item => !this.SAMPLE_ITEM_NAMES.includes(item.name)
+        );
+        
+        if (this.items.length < originalLength) {
+          console.log(`Removed ${originalLength - this.items.length} sample items from wardrobe`);
+          this.saveToStorage();
+        }
+        
+        // Mark migration as complete so it never runs again
+        sessionStorage.setItem(this.MIGRATION_KEY, 'true');
       }
+    } catch (error) {
+      console.warn('Failed to remove sample data:', error);
     }
   }
 
@@ -73,109 +110,10 @@ export class WardrobeService {
   }
 
   /**
-   * Seed sample data for development/demo
-   */
-  private seedSampleData(): void {
-    const sampleItems: ClothingItem[] = [
-      {
-        id: this.generateId(),
-        name: 'Ivory Knit Top',
-        category: 'tops',
-        imageUrl: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=600&fit=crop',
-        color: 'Ivory',
-        occasions: ['casual', 'office'],
-        styleTags: ['minimal', 'romantic'],
-        wearCount: 12,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: this.generateId(),
-        name: 'Brown Wide-Leg Trousers',
-        category: 'bottoms',
-        imageUrl: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=400&h=600&fit=crop',
-        color: 'Brown',
-        occasions: ['office', 'casual'],
-        styleTags: ['chic', 'classic'],
-        wearCount: 8,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: this.generateId(),
-        name: 'Rose Slip Dress',
-        category: 'dresses',
-        imageUrl: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=600&fit=crop',
-        color: 'Rose',
-        occasions: ['dates', 'parties'],
-        styleTags: ['romantic', 'feminine'],
-        wearCount: 5,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: this.generateId(),
-        name: 'Camel Trench Coat',
-        category: 'outerwear',
-        imageUrl: 'https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?w=400&h=600&fit=crop',
-        color: 'Camel',
-        occasions: ['office', 'travel'],
-        styleTags: ['classic', 'timeless'],
-        wearCount: 6,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: this.generateId(),
-        name: 'White Sneakers',
-        category: 'shoes',
-        imageUrl: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=600&fit=crop',
-        color: 'White',
-        occasions: ['casual', 'travel'],
-        styleTags: ['sporty', 'minimal'],
-        wearCount: 15,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: this.generateId(),
-        name: 'Gold Hoop Earrings',
-        category: 'accessories',
-        imageUrl: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&h=600&fit=crop',
-        color: 'Gold',
-        occasions: ['parties', 'dates'],
-        styleTags: ['elegant', 'minimal'],
-        wearCount: 10,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: this.generateId(),
-        name: 'Black Shoulder Bag',
-        category: 'accessories',
-        imageUrl: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=400&h=600&fit=crop',
-        color: 'Black',
-        occasions: ['office', 'casual'],
-        styleTags: ['classic', 'minimal'],
-        wearCount: 20,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: this.generateId(),
-        name: 'Cream Cardigan',
-        category: 'tops',
-        imageUrl: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=600&fit=crop',
-        color: 'Cream',
-        occasions: ['casual', 'office'],
-        styleTags: ['cozy', 'romantic'],
-        wearCount: 7,
-        createdAt: new Date().toISOString()
-      }
-    ];
-
-    this.items = sampleItems;
-    this.saveToStorage();
-  }
-
-  /**
    * Generate a unique ID for clothing items
    */
   private generateId(): string {
-    return `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `item_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
   }
 
   /**
