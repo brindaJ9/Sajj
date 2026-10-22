@@ -5,6 +5,7 @@ Main application entry point
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.routers import wardrobe_router
 
 # Create the FastAPI application instance
 app = FastAPI(
@@ -22,6 +23,9 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],  # Allow all headers
 )
+
+# Include routers
+app.include_router(wardrobe_router)
 
 
 # Root endpoint - basic health check
@@ -49,3 +53,4 @@ def health_check():
         "status": "healthy",
         "version": "1.0.0"
     }
+
