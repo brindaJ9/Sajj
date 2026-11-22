@@ -1,9 +1,9 @@
+
 """
 AI-powered clothing image analysis for Sajj.
 """
 
 import base64
-import json
 import os
 
 from dotenv import load_dotenv
@@ -12,30 +12,52 @@ from openai import AsyncOpenAI
 from app.models import ClothingMetadata
 
 
+# Load environment variables from .env
 load_dotenv()
 
 
 ANALYSIS_PROMPT = """
-You are a clothing analysis assistant for Sajj, a personal styling app.
+You are Sajj, an AI clothing analysis assistant.
 
-Analyze the provided image and identify the main clothing item.
+Your task is to identify and describe the main clothing item
+visible in the uploaded image.
 
-Return a JSON object with exactly these fields:
-- name: A short, descriptive clothing item name.
-- category: One of tops, bottoms, dresses, outerwear, shoes, accessories.
-- color: The main visible color, written in lowercase.
-- season: A list of suitable seasons, using spring, summer, autumn, winter.
-- occasions: A list of suitable occasions, such as casual, work, party,
-  formal, or festive.
-- styleTags: A list of relevant style descriptors, such as minimalist,
-  classic, bohemian, sporty, or streetwear.
+Return the following information:
 
-Rules:
-1. Describe only what is reasonably supported by the image.
-2. Choose the category that best matches the main clothing item.
-3. Use lowercase for color, seasons, occasions, and style tags.
-4. Return valid JSON only, with no Markdown or extra commentary.
-5. If a detail is uncertain, make a reasonable conservative estimate.
+1. name:
+   A concise descriptive name for the item.
+
+2. category:
+   Select exactly one:
+   tops, bottoms, dresses, outerwear, shoes, accessories.
+
+3. color:
+   Identify the dominant visible color.
+   Use a simple, descriptive lowercase color name.
+
+4. season:
+   Select suitable seasons from:
+   spring, summer, autumn, winter.
+
+5. occasions:
+   Select suitable occasions such as:
+   casual, everyday, work, formal, party, festive.
+
+6. styleTags:
+   Select relevant style descriptors such as:
+   minimalist, classic, bohemian, sporty,
+   streetwear, vintage, elegant.
+
+Important instructions:
+
+- Analyze the actual image, not assumptions about the user.
+- Identify only the main clothing item.
+- Do not invent material or fabric composition.
+- Distinguish visible attributes from subjective styling suggestions.
+- Do not confuse a garment's category with its style.
+- Use lowercase for color, seasons, occasions and style tags.
+- Use "autumn", never "fall".
+- Make conservative estimates when information is uncertain.
 """
 
 
@@ -44,7 +66,7 @@ async def analyze_clothing_image(
     content_type: str,
 ) -> ClothingMetadata:
     """
-    Analyze a clothing image and return validated metadata.
+    Analyze a clothing image using OpenAI's vision model.
 
     Args:
         image_bytes: Raw bytes of the uploaded image.
@@ -54,22 +76,30 @@ async def analyze_clothing_image(
         ClothingMetadata: Validated clothing information.
     """
 
+    # Step 1: Read configuration
     api_key = os.getenv("OPENAI_API_KEY")
-    model = os.getenv("OPENAI_MODEL", "gpt-5.4-mini")
+    model = os.getenv("OPENAI_MODEL", "gpt-5.4-nano")
 
-    if not api_key or api_key == "your_actual_api_key_here":
+    if not api_key or not api_key.strip():
         raise RuntimeError(
-            "OpenAI API key is missing. Configure OPENAI_API_KEY in .env."
+            "OpenAI API key is missing. Configure it in .env."
         )
 
-    # Convert the image bytes into a Base64 data URL.
-    encoded_image = base64.b64encode(image_bytes).decode("utf-8")
-    image_data_url = f"data:{content_type};base64,{encoded_image}"
+    if not image_bytes:
+        raise ValueError("Image data cannot be empty.")
 
-    # Create an asynchronous API client.
+    # Step 2: Encode the image
+    encoded_image = base64.b64encode(image_bytes).decode("utf-8")
+
+    image_data_url = (
+        f"data:{content_type};base64,{encoded_image}"
+    )
+
+    # Step 3: Create the API client
     async with AsyncOpenAI(api_key=api_key) as client:
 
-        response = await client.responses.create(
+        # Step 4: Send image and request structured output
+        response = await client.responses.parse(
             model=model,
             instructions=ANALYSIS_PROMPT,
             input=[
@@ -78,24 +108,27 @@ async def analyze_clothing_image(
                     "content": [
                         {
                             "type": "input_text",
-                            "text": "Analyze this clothing item.",
+                            "text": "Analyze this clothing item."
                         },
                         {
                             "type": "input_image",
                             "image_url": image_data_url,
-                            "detail": "low",
-                        },
-                    ],
+                            "detail": "low"
+                        }
+                    ]
                 }
             ],
-            text={"format": {"type": "json_object"}},
+            text_format=ClothingMetadata,
+            max_output_tokens=500
         )
 
-    # Extract the JSON text returned by the model.
-    result_text = response.output_text
+    # Step 5: Extract the parsed Pydantic object
+    metadata = response.output_parsed
 
-    # Convert JSON text into a Python dictionary.
-    result_data = json.loads(result_text)
+    if metadata is None:
+        raise ValueError(
+            "The AI did not return valid clothing metadata."
+        )
 
-    # Validate the result against Sajj's existing Pydantic model.
-    return ClothingMetadata.model_validate(result_data)
+    # Step 6: Return validated metadata
+    return metadata

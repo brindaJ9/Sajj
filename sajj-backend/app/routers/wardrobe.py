@@ -1,12 +1,15 @@
+import os
+import logging
+
+from fastapi import APIRouter, File, UploadFile, HTTPException, status
+from app.models import ClothingMetadata
+from app.services.clothing_analyzer import analyze_clothing_image as analyze_image_with_ai
+
 """
 Wardrobe API Router
 
 Handles clothing item management and AI-powered image analysis.
 """
-
-from fastapi import APIRouter, File, UploadFile, HTTPException, status
-from app.models import ClothingMetadata
-import logging
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -37,7 +40,10 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB in bytes
     description="""
     Upload a clothing item image to extract metadata using AI vision analysis.
     
-    **⚠️ MOCK ENDPOINT**: Currently returns mock data for testing.
+        **AI MODES**:
+    - mock: Returns sample metadata for testing.
+    - real: Uses an AI vision model to analyze the uploaded image.
+
     Real AI integration will be added in a future update.
     
     **Supported formats**: JPEG, PNG, WebP
@@ -102,7 +108,7 @@ async def analyze_clothing_image(
     """
     Analyze a clothing item image and extract metadata using AI vision.
     
-    **Current Implementation**: Returns mock data for testing the upload flow.
+    **Current Implementation**: Returns either real or mock data for testing the upload flow.
     
     Args:
         file: Uploaded image file (JPEG, PNG, or WebP)
@@ -162,22 +168,54 @@ async def analyze_clothing_image(
             detail="Error processing uploaded file"
         )
     
-    # TODO: Here we will integrate the actual AI vision model
-    # For now, return mock data to test the upload flow
     
-    logger.info("Returning MOCK metadata (AI integration pending)")
-    
-    # Mock response - clearly marked for testing
-    mock_metadata = ClothingMetadata(
-        name="Black Midi Skirt",
-        category="bottoms",
-        color="black",
-        season=["spring", "autumn"],
-        occasions=["casual", "work"],
-        styleTags=["minimalist", "classic"]
-    )
-    
-    return mock_metadata
+    # Decide whether to use mock data or real AI analysis
+    mode = os.getenv("SAJJ_AI_MODE", "mock").strip().lower()
+
+    if mode == "mock":
+        logger.info("Returning MOCK clothing metadata")
+
+        return ClothingMetadata(
+            name="Black Midi Skirt",
+            category="bottoms",
+            color="black",
+            season=["spring", "autumn"],
+            occasions=["casual", "work"],
+            styleTags=["minimalist", "classic"]
+        )
+
+    if mode != "real":
+        logger.error("Invalid SAJJ_AI_MODE: %s", mode)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Invalid AI mode configuration"
+        )
+
+    # Real AI analysis
+    try:
+        logger.info("Sending image to AI clothing analyzer")
+
+        metadata = await analyze_image_with_ai(
+            image_bytes=contents,
+            content_type=file.content_type
+        )
+
+        logger.info("AI clothing analysis completed successfully")
+        return metadata
+
+    except RuntimeError:
+        logger.exception("AI analyzer configuration error")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI analysis is not configured correctly"
+        )
+
+    except Exception:
+        logger.exception("AI clothing analysis failed")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="AI image analysis failed. Please try again."
+        )
 
 
 # Additional endpoint to get supported file types (useful for frontend)

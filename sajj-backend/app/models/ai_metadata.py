@@ -9,8 +9,7 @@ application-level fields like id, imageUrl, wearCount, etc.
 """
 
 from typing import List, Literal
-from pydantic import BaseModel, Field, field_validator
-
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 # Define valid categories as a type for better type safety
 ClothingCategory = Literal[
@@ -54,8 +53,6 @@ class ClothingMetadata(BaseModel):
     
     name: str = Field(
         ...,
-        min_length=1,
-        max_length=200,
         description="Descriptive name of the clothing item",
         examples=["White Cotton T-Shirt", "Black Leather Jacket", "Blue Denim Jeans"]
     )
@@ -68,8 +65,6 @@ class ClothingMetadata(BaseModel):
     
     color: str = Field(
         ...,
-        min_length=1,
-        max_length=50,
         description="Primary color of the item",
         examples=["navy blue", "white", "forest green", "burgundy"]
     )
@@ -101,16 +96,25 @@ class ClothingMetadata(BaseModel):
         """Ensure name is not just whitespace"""
         if not v or not v.strip():
             raise ValueError('Name cannot be empty or whitespace')
+        if len(v) > 200:
+            raise ValueError("Name cannot exceed 200 characters")    
         return v.strip()
     
     @field_validator('color')
     @classmethod
     def validate_color(cls, v: str) -> str:
-        """Ensure color is not just whitespace"""
+        """Ensure color is not empty and within the allowed length."""
         if not v or not v.strip():
-            raise ValueError('Color cannot be empty or whitespace')
-        return v.strip().lower()
-    
+           raise ValueError('Color cannot be empty or whitespace')
+
+        cleaned = v.strip().lower()
+ 
+        if len(cleaned) > 50:
+            raise ValueError("Color cannot exceed 50 characters")
+
+        return cleaned
+
+
     @field_validator('season', 'occasions', 'styleTags')
     @classmethod
     def validate_string_lists(cls, v: List[str]) -> List[str]:
@@ -137,34 +141,27 @@ class ClothingMetadata(BaseModel):
         
         return unique
     
-    class Config:
-        """Pydantic model configuration"""
-        # Generate JSON schema with examples
-        json_schema_extra = {
-            "examples": [
-                {
-                    "name": "Navy Blue Blazer",
-                    "category": "outerwear",
-                    "color": "navy blue",
-                    "season": ["spring", "fall", "winter"],
-                    "occasions": ["work", "formal", "business"],
-                    "styleTags": ["classic", "professional", "tailored"]
-                },
-                {
-                    "name": "White Cotton T-Shirt",
-                    "category": "tops",
-                    "color": "white",
-                    "season": ["spring", "summer", "fall"],
-                    "occasions": ["casual", "everyday", "weekend"],
-                    "styleTags": ["minimalist", "basic", "versatile"]
-                },
-                {
-                    "name": "Black Ankle Boots",
-                    "category": "shoes",
-                    "color": "black",
-                    "season": ["fall", "winter", "spring"],
-                    "occasions": ["casual", "work", "night out"],
-                    "styleTags": ["edgy", "modern", "versatile"]
-                }
-            ]
-        }
+    model_config = ConfigDict(
+      extra="forbid",
+      str_strip_whitespace=True,
+      json_schema_extra={
+        "examples": [
+            {
+                "name": "Navy Blue Blazer",
+                "category": "outerwear",
+                "color": "navy blue",
+                "season": ["spring", "autumn", "winter"],
+                "occasions": ["work", "formal", "business"],
+                "styleTags": ["classic", "professional", "tailored"]
+            },
+            {
+                "name": "White Cotton T-Shirt",
+                "category": "tops",
+                "color": "white",
+                "season": ["spring", "summer", "autumn"],
+                "occasions": ["casual", "everyday", "weekend"],
+                "styleTags": ["minimalist", "basic", "versatile"]
+            }
+        ]
+    }
+)
