@@ -17,6 +17,27 @@
       <h1 class="brand-logo">Sajj</h1>
     </div>
     <div class="header-right">
+      <div class="search-container" [class.expanded]="searchExpanded">
+        @if (searchExpanded) {
+          <input 
+            #searchInput
+            type="text" 
+            class="search-input" 
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="performSearch()"
+            placeholder="Search by name or color..."
+          />
+          @if (searchQuery) {
+            <button class="search-clear" (click)="clearSearch()">×</button>
+          }
+        }
+        <button class="search-button" (click)="onSearchButtonClick()" [class.active]="isSearchActive">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
       <app-profile-dropdown />
     </div>
   </header>
@@ -93,91 +114,263 @@
 <!-- Add/Edit Item Modal -->
 @if (showAddModal) {
   <div class="modal-backdrop" (click)="closeAddModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3 class="modal-title">{{ isEditMode ? 'Edit Item' : 'Add to your wardrobe' }}</h3>
-        <button class="modal-close" (click)="closeAddModal()">×</button>
+    <div class="modal-content add-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeAddModal()">×</button>
+
+      <!-- Progress Bar -->
+      <div class="progress-bar-container">
+        <div class="progress-bar">
+          <div class="progress-step" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1">
+            <div class="step-line"></div>
+            <span class="step-label">UPLOAD</span>
+          </div>
+          <div class="progress-step" [class.active]="currentStep >= 3" [class.completed]="currentStep > 3">
+            <div class="step-line"></div>
+            <span class="step-label">REVIEW</span>
+          </div>
+        </div>
       </div>
 
       <div class="modal-body">
-        <form (ngSubmit)="addItem()">
-          <!-- Image Upload -->
-          <div class="form-group">
-            <label class="form-label">Image</label>
-            @if (newItem.imageUrl) {
-              <div class="image-preview">
-                <img [src]="newItem.imageUrl" alt="Preview" />
-                <button type="button" class="remove-image" (click)="newItem.imageUrl = ''">×</button>
-              </div>
-            } @else {
-              <div class="upload-area">
-                <input 
-                  type="file" 
-                  id="imageUpload" 
-                  accept="image/*" 
-                  (change)="onFileSelected($event)"
-                  class="file-input"
-                />
-                <label for="imageUpload" class="upload-label">
-                  <span class="upload-icon">📷</span>
-                  <span class="upload-text">Upload Image</span>
-                </label>
-              </div>
-            }
-          </div>
+        <!-- STEP 1: Upload -->
+        @if (currentStep === 1) {
+          <div class="upload-step">
+            <h3 class="modal-title">{{ isEditMode ? 'Update your piece' : 'Add to your wardrobe' }}</h3>
+            <p class="modal-subtitle">Let's meet your new piece.</p>
 
-          <!-- Item Name -->
-          <div class="form-group">
-            <label class="form-label">Item Name *</label>
-            <input 
-              type="text" 
-              class="form-input" 
-              [(ngModel)]="newItem.name"
-              name="name"
-              placeholder="e.g., White Linen Shirt"
-              required
-            />
-          </div>
-
-          <!-- Category -->
-          <div class="form-group">
-            <label class="form-label">Category *</label>
-            <select 
-              class="form-select" 
-              [(ngModel)]="newItem.category"
-              name="category"
-              required
-            >
-              @for (cat of categories; track cat.id) {
-                @if (cat.id !== 'all') {
-                  <option [value]="cat.id">{{ cat.label }}</option>
-                }
+            <!-- Drag and Drop Upload Area -->
+            <div class="upload-zone" 
+                 [class.has-image]="newItem.imageUrl"
+                 (dragover)="onDragOver($event)" 
+                 (dragleave)="onDragLeave($event)" 
+                 (drop)="onDrop($event)">
+              @if (newItem.imageUrl) {
+                <div class="image-preview-large">
+                  <img [src]="newItem.imageUrl" alt="Preview" />
+                  <button type="button" class="remove-image-large" (click)="removeImage()">×</button>
+                </div>
+              } @else {
+                <div class="upload-prompt">
+                  <div class="upload-icon-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                  </div>
+                  <p class="upload-main-text">Drag a photo here</p>
+                  <p class="upload-or-text">or</p>
+                  <input 
+                    type="file" 
+                    id="imageUpload" 
+                    accept="image/jpeg,image/png,image/webp" 
+                    (change)="onFileSelected($event)"
+                    class="file-input"
+                  />
+                  <label for="imageUpload" class="browse-button">
+                    Browse files
+                  </label>
+                  <p class="upload-hint">JPG, PNG or WebP · up to 10 MB</p>
+                </div>
               }
-            </select>
-          </div>
+            </div>
 
-          <!-- Color -->
-          <div class="form-group">
-            <label class="form-label">Color</label>
-            <input 
-              type="text" 
-              class="form-input" 
-              [(ngModel)]="newItem.color"
-              name="color"
-              placeholder="e.g., Ivory"
-            />
-          </div>
+            <!-- Info Note -->
+            <div class="info-note">
+              <span class="info-icon">✨</span>
+              <p class="info-text">Sajj will automatically identify your piece's name, category, colour, season and style. You can edit everything before saving.</p>
+            </div>
 
-          <!-- Form Actions -->
-          <div class="form-actions">
-            <button type="button" class="button-secondary" (click)="closeAddModal()">
-              Cancel
-            </button>
-            <button type="submit" class="button-primary">
-              {{ isEditMode ? 'Update Item' : 'Add to Wardrobe' }}
-            </button>
+            <!-- Action Buttons -->
+            <div class="modal-actions">
+              <button type="button" class="button-secondary" (click)="closeAddModal()">
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                class="button-primary" 
+                [disabled]="!newItem.imageUrl"
+                (click)="goToReview()">
+                <span class="button-icon">✨</span>
+                Analyse with AI
+              </button>
+            </div>
           </div>
-        </form>
+        }
+
+        <!-- STEP 2: Analyzing -->
+        @if (currentStep === 2) {
+          <div class="analyzing-step">
+            <h3 class="modal-title">{{ isEditMode ? 'Update your piece' : 'Add to your wardrobe' }}</h3>
+            <p class="modal-subtitle">Let's meet your new piece.</p>
+
+            <!-- Analyzing Image with Overlay -->
+            <div class="analyzing-container">
+              <div class="analyzing-image">
+                <img [src]="newItem.imageUrl" alt="Analyzing" />
+                <div class="analyzing-overlay">
+                  <div class="analyzing-spinner"></div>
+                  <p class="analyzing-text">Getting to know your piece...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Info Note -->
+            <div class="info-note">
+              <span class="info-icon">✨</span>
+              <p class="info-text">Sajj will automatically identify your piece's name, category, colour, season and style. You can edit everything before saving.</p>
+            </div>
+
+            <!-- Action Buttons (disabled during analysis) -->
+            <div class="modal-actions">
+              <button type="button" class="button-secondary" disabled>
+                Cancel
+              </button>
+              <button type="button" class="button-primary" disabled>
+                <span class="button-icon">✨</span>
+                Analyse with AI
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- STEP 3: Review -->
+        @if (currentStep === 3) {
+          <div class="review-step">
+            <h3 class="modal-title">Your piece, understood.</h3>
+            <p class="modal-subtitle">Review the details Sajj discovered. You can edit anything before saving.</p>
+
+            <form (ngSubmit)="addItem()">
+              <div class="review-layout">
+                <!-- Left: Image Preview -->
+                <div class="review-image-section">
+                  <div class="review-image-preview">
+                    <img [src]="newItem.imageUrl" alt="Preview" />
+                  </div>
+                </div>
+
+                <!-- Right: Form Fields -->
+                <div class="review-form-section">
+                  <!-- AI Suggested Badge -->
+                  <div class="ai-badge">
+                    <span class="ai-icon">✨</span>
+                    Suggested by Sajj AI
+                  </div>
+
+                  <!-- Item Name -->
+                  <div class="form-group">
+                    <label class="form-label">Item name</label>
+                    <input 
+                      type="text" 
+                      class="form-input" 
+                      [(ngModel)]="newItem.name"
+                      name="name"
+                      placeholder="e.g., White Linen Shirt"
+                      required
+                    />
+                  </div>
+
+                  <!-- Category and Color - Two columns -->
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label">Category</label>
+                      <select 
+                        class="form-select" 
+                        [(ngModel)]="newItem.category"
+                        name="category"
+                        required
+                      >
+                        @for (cat of categories; track cat.id) {
+                          @if (cat.id !== 'all') {
+                            <option [value]="cat.id">{{ cat.label }}</option>
+                          }
+                        }
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Colour</label>
+                      <input 
+                        type="text" 
+                        class="form-input" 
+                        [(ngModel)]="newItem.color"
+                        name="color"
+                        placeholder="e.g., Ivory"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Season -->
+                  <div class="form-group">
+                    <label class="form-label">Season</label>
+                    <div class="chip-group">
+                      @for (season of allSeasons; track season) {
+                        <button 
+                          type="button"
+                          class="chip-button"
+                          [class.selected]="isSeasonSelected(season)"
+                          (click)="toggleSeason(season)"
+                        >
+                          {{ season }}
+                        </button>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Occasions -->
+                  <div class="form-group">
+                    <label class="form-label">Occasions</label>
+                    <div class="chip-group">
+                      @for (occasion of allOccasions; track occasion) {
+                        <button 
+                          type="button"
+                          class="chip-button"
+                          [class.selected]="isOccasionSelected(occasion)"
+                          (click)="toggleOccasion(occasion)"
+                        >
+                          {{ occasion }}
+                        </button>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Style Tags -->
+                  <div class="form-group">
+                    <label class="form-label">Style tags</label>
+                    <div class="tags-container">
+                      @for (tag of newItem.styleTags; track tag) {
+                        <div class="tag-chip">
+                          {{ tag }}
+                          <button type="button" class="tag-remove" (click)="removeStyleTag(tag)">×</button>
+                        </div>
+                      }
+                    </div>
+                    <div class="tag-input-container">
+                      <input 
+                        type="text" 
+                        class="form-input tag-input" 
+                        [(ngModel)]="newStyleTag"
+                        name="newStyleTag"
+                        placeholder="+ Add tag"
+                        (keyup.enter)="addStyleTag()"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Form Actions -->
+              <div class="modal-actions">
+                <button type="button" class="button-secondary" (click)="goBackToUpload()">
+                  ← Back
+                </button>
+                <button type="submit" class="button-primary">
+                  {{ isEditMode ? 'Update Item' : 'Save to My Wardrobe' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        }
       </div>
     </div>
   </div>

@@ -6,6 +6,9 @@ export type ClothingCategory =
   | 'shoes'
   | 'accessories';
 
+export type Season = 'Spring' | 'Summer' | 'Autumn' | 'Winter';
+export type Occasion = 'Everyday' | 'Casual' | 'Work' | 'Formal' | 'Party' | 'Festive';
+
 export interface ClothingItem {
   // Identity
   id: string;
@@ -25,8 +28,8 @@ export interface ClothingItem {
   warmth?: number;
 
   // Personalization
-  season?: string[];
-  occasions?: string[];
+  seasons?: Season[];
+  occasions?: Occasion[];
   styleTags?: string[];
 
   // Usage history
