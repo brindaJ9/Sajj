@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BottomNavComponent } from '../../../../shared/components/bottom-nav/bottom-nav.component';
@@ -17,6 +17,7 @@ export class WardrobePageComponent implements OnInit {
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
   
   private wardrobeService = inject(WardrobeService);
+  private cdr = inject(ChangeDetectorRef);
 
   items: ClothingItem[] = [];
   filteredItems: ClothingItem[] = [];
@@ -39,6 +40,10 @@ export class WardrobePageComponent implements OnInit {
   allSeasons: Season[] = ['Spring', 'Summer', 'Autumn', 'Winter'];
   allOccasions: Occasion[] = ['Everyday', 'Casual', 'Work', 'Formal', 'Party', 'Festive'];
   newStyleTag = '';
+  
+  // File handling
+  private imageFile: File | null = null;
+  private analysisTimer: any = null;
 
   // Form data
   newItem: Partial<ClothingItem> = {
@@ -116,11 +121,16 @@ export class WardrobePageComponent implements OnInit {
   closeAddModal() {
     this.showAddModal = false;
     this.currentStep = 1;
+    if (this.analysisTimer) {
+      clearTimeout(this.analysisTimer);
+      this.analysisTimer = null;
+    }
     this.resetForm();
     document.body.style.overflow = '';
   }
 
   resetForm() {
+    this.revokePreview();
     this.newItem = {
       name: '',
       category: 'tops',
@@ -138,6 +148,8 @@ export class WardrobePageComponent implements OnInit {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       this.processFile(file);
+      // Reset the input so the same file can be selected again
+      input.value = '';
     }
   }
 
@@ -155,13 +167,30 @@ export class WardrobePageComponent implements OnInit {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e: ProgressEvent<FileReader>) => {
-      if (e.target?.result) {
-        this.newItem.imageUrl = e.target.result as string;
-      }
-    };
-    reader.readAsDataURL(file);
+    this.revokePreview();
+    this.imageFile = file;
+    this.newItem.imageUrl = URL.createObjectURL(file); // synchronous, shows instantly
+  }
+
+  removeImage() {
+    this.revokePreview();
+    this.newItem.imageUrl = '';
+  }
+
+  private revokePreview() {
+    if (this.newItem.imageUrl?.startsWith('blob:')) {
+      URL.revokeObjectURL(this.newItem.imageUrl);
+    }
+    this.imageFile = null;
+  }
+
+  private fileToDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result as string);
+      r.onerror = () => reject(r.error);
+      r.readAsDataURL(file);
+    });
   }
 
   // Drag and drop handlers
@@ -185,10 +214,6 @@ export class WardrobePageComponent implements OnInit {
     }
   }
 
-  removeImage() {
-    this.newItem.imageUrl = '';
-  }
-
   goToReview() {
     if (this.newItem.imageUrl) {
       this.currentStep = 2; // Go to analyzing state
@@ -198,7 +223,7 @@ export class WardrobePageComponent implements OnInit {
 
   simulateAIAnalysis() {
     // Simulate AI analysis with a delay
-    setTimeout(() => {
+    this.analysisTimer = setTimeout(() => {
       // Mock AI-generated data
       this.newItem.name = 'Ivory knit top';
       this.newItem.color = 'Ivory';
@@ -208,10 +233,16 @@ export class WardrobePageComponent implements OnInit {
       
       // Move to review step
       this.currentStep = 3;
+      this.analysisTimer = null;
+      this.cdr.markForCheck();
     }, 2500); // 2.5 seconds for analysis
   }
 
   goBackToUpload() {
+    if (this.analysisTimer) {
+      clearTimeout(this.analysisTimer);
+      this.analysisTimer = null;
+    }
     this.currentStep = 1;
   }
 
@@ -268,10 +299,15 @@ export class WardrobePageComponent implements OnInit {
     }
   }
 
-  addItem() {
+  async addItem() {
     if (!this.newItem.name || !this.newItem.category) {
       alert('Please provide at least a name and category');
       return;
+    }
+
+    // Convert blob URL to data URL for storage
+    if (this.imageFile) {
+      this.newItem.imageUrl = await this.fileToDataUrl(this.imageFile);
     }
 
     if (this.isEditMode && this.selectedItem) {
@@ -284,6 +320,7 @@ export class WardrobePageComponent implements OnInit {
 
     this.loadItems();
     this.closeAddModal();
+    this.cdr.markForCheck();
   }
 
   // Item Detail Modal
